@@ -62,10 +62,12 @@
                     <label for="geojson-network" class="block text-sm font-medium text-gray-700 mb-2">1. Upload or Paste GeoJSON Network</label>
                     <input type="file" id="geojson-file-input" accept=".geojson,.json" class="w-full border border-gray-300 rounded-lg p-2 bg-white shadow-sm mb-2">
                     <textarea id="geojson-network" rows="8" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="...or paste GeoJSON content here."></textarea>
+                    <button id="clear-geojson-network" class="mt-2 w-full bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors text-sm">Clear Network Input</button>
                 </div>
                 <div>
                     <label for="waypoints" class="block text-sm font-medium text-gray-700 mb-2">2. Click Map to Add/Delete Waypoints</label>
                     <textarea id="waypoints" rows="6" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    <button id="clear-waypoints" class="mt-2 w-full bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors text-sm">Clear Waypoints Input</button>
                 </div>
                 <button id="calculate-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300 shadow-md">
                     Calculate Route
@@ -95,6 +97,8 @@
         const geojsonNetworkTextarea = document.getElementById('geojson-network');
         const geojsonFileInput = document.getElementById('geojson-file-input');
         const waypointsTextarea = document.getElementById('waypoints');
+        const clearGeojsonNetworkBtn = document.getElementById('clear-geojson-network');
+        const clearWaypointsBtn = document.getElementById('clear-waypoints');
 
         // --- MAP INITIALIZATION ---
         const map = L.map('map').setView([55, 10], 5);
@@ -125,6 +129,16 @@
         calculateBtn.addEventListener('click', handleCalculation);
         map.on('click', handleMapClick);
         zoomBtn.addEventListener('click', handleZoomToRoute);
+        clearGeojsonNetworkBtn.addEventListener('click', () => {
+            geojsonNetworkTextarea.value = '';
+            setStatus('GeoJSON network input cleared.', false);
+        });
+
+        clearWaypointsBtn.addEventListener('click', () => {
+            waypointsTextarea.value = '';
+            redrawWaypointMarkers(); // Clear markers from map too
+            setStatus('Waypoints input cleared.', false);
+        });
 
         // --- EVENT HANDLER FUNCTIONS ---
 
@@ -345,7 +359,7 @@
         }
         
         function drawNetworkOnMap(geoJSON) {
-            L.geoJSON(geoJSON, { style: { color: "#4a5568", weight: 2, opacity: 0.5 } }).addTo(networkLayer);
+    L.geoJSON(geoJSON, { style: { color: "#D3D3D3", weight: 2, opacity: 0.5 } }).addTo(networkLayer);
         }
 
         function drawWaypointsOnMap(waypoints) {
@@ -386,7 +400,7 @@
         }
 
         function drawResultPathOnMap(geoJSON) {
-            const routeLayer = L.geoJSON(geoJSON, { style: { color: "#c53030", weight: 5, opacity: 0.8 } });
+    const routeLayer = L.geoJSON(geoJSON, { style: { color: "#0000FF", weight: 5, opacity: 0.8 } });
             routeLayer.bindPopup(`<b>Calculated Route</b><br/>Total Distance: ${geoJSON.properties.total_distance_km} km`);
             routeLayer.addTo(resultLayer);
         }
