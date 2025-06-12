@@ -61,7 +61,7 @@
                 <div>
                     <label for="geojson-network" class="block text-sm font-medium text-gray-700 mb-2">1. Upload or Paste GeoJSON Network</label>
                     <input type="file" id="geojson-file-input" accept=".geojson,.json" class="w-full border border-gray-300 rounded-lg p-2 bg-white shadow-sm mb-2">
-                    <textarea id="geojson-network" rows="8" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="...or paste GeoJSON content here."></textarea>
+                    <textarea id="geojson-network" rows="8" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Loading external GeoJSON network..."></textarea>
                 </div>
                 <div>
                     <label for="waypoints" class="block text-sm font-medium text-gray-700 mb-2">2. Click Map to Add/Delete Waypoints</label>
@@ -112,11 +112,11 @@
 
         // --- INITIAL DATA & UI SETUP ---
         waypointsTextarea.value = JSON.stringify([
-            { "lon": 12.599, "lat": 55.682 }, { "lon": 12.09, "lat": 54.182 },
-            { "lon": 10.221, "lat": 56.157 }, { "lon": 10.729, "lat": 59.91 },
-            { "lon": 7.989, "lat": 58.147 }, { "lon": 10.005, "lat": 53.54 },
-            { "lon": 4.93, "lat": 52.377 }, { "lon": 3.199, "lat": 51.344 },
-            { "lon": 0.112, "lat": 49.482 }, { "lon": -1.41, "lat": 50.894 }
+          { "lon": 12.599, "lat": 55.682 }, { "lon": 12.09, "lat": 54.182 },
+          { "lon": 10.221, "lat": 56.157 }, { "lon": 10.729, "lat": 59.91 },
+          { "lon": 7.989, "lat": 58.147 }, { "lon": 10.005, "lat": 53.54 },
+          { "lon": 4.93, "lat": 52.377 }, { "lon": 3.199, "lat": 51.344 },
+          { "lon": 0.112, "lat": 49.482 }, { "lon": -1.41, "lat": 50.894 }
         ], null, 2);
         redrawWaypointMarkers();
 
@@ -125,6 +125,26 @@
         calculateBtn.addEventListener('click', handleCalculation);
         map.on('click', handleMapClick);
         zoomBtn.addEventListener('click', handleZoomToRoute);
+
+        // --- ASYNC FUNCTION TO LOAD EXTERNAL GEOJSON ---
+        async function loadExternalGeoJSON() {
+            const url = 'https://raw.githubusercontent.com/Lvdwardt/seaRoute/refs/heads/master/dataset/searoutes-v1.geojson';
+            try {
+                setStatus('Loading external GeoJSON network...', false);
+                const response = await fetch(url);
+                if (response.ok) {
+                    const geojsonData = await response.text();
+                    geojsonNetworkTextarea.value = geojsonData;
+                    setStatus('External GeoJSON loaded. Ready to calculate or add waypoints.', false);
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('Failed to load external GeoJSON:', error);
+                geojsonNetworkTextarea.value = '{\n  "type": "FeatureCollection",\n  "features": []\n}';
+                setStatus('Failed to load external GeoJSON. Using empty network. Please check console or try pasting your own GeoJSON.', true);
+            }
+        }
 
         // --- EVENT HANDLER FUNCTIONS ---
 
@@ -395,6 +415,9 @@
             statusDiv.textContent = message;
             statusDiv.className = isError ? 'text-center text-red-600 mt-2' : 'text-center text-gray-600 mt-2';
         }
+
+        // --- INITIAL PAGE LOAD ACTIONS ---
+        loadExternalGeoJSON();
 
     </script>
 </body>
